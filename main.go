@@ -18,11 +18,13 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"path/filepath"
 	"yevhenhrytsai/k8s-client-test/deployment"
 
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 	//
@@ -35,6 +37,17 @@ import (
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )
 
+type ControllerType string
+
+const (
+	ArgocdControllerType ControllerType = "argocd"
+	FluxControllerType   ControllerType = "flux"
+)
+
+const (
+	controller = FluxControllerType
+)
+
 func main() {
 	var kubeconfig *string
 	if home := homedir.HomeDir(); home != "" {
@@ -44,26 +57,49 @@ func main() {
 	}
 	flag.Parse()
 
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-	if err != nil {
-		panic(err)
-	}
-	client, err := dynamic.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	switch controller {
+	case ArgocdControllerType:
+		config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+		if err != nil {
+			panic(err)
+		}
+		client, err := dynamic.NewForConfig(config)
+		if err != nil {
+			panic(err)
+		}
 
-	deployment := deployment.NewArgoCDDeploymentController(deployment.ArgoCDDeploymentConfig{
-		Id:                   "abc",
-		AppName:              "kbot-",
-		ArgocdNamespace:      "argocd",
-		DestServer:           "https://192.168.1.119:16443",
-		SourceRepoURL:        "https://github.com/yevgen-grytsay/kbot",
-		SourceTargetRevision: "argocd",
-		SourcePath:           "helm",
-	}, client)
+		deployment := deployment.NewArgoCDDeploymentController(deployment.ArgoCDDeploymentConfig{
+			Id:                   "abc",
+			AppName:              "kbot-",
+			ArgocdNamespace:      "argocd",
+			DestServer:           "https://192.168.1.119:16443",
+			SourceRepoURL:        "https://github.com/yevgen-grytsay/kbot",
+			SourceTargetRevision: "argocd",
+			SourcePath:           "helm",
+		}, client)
 
-	deployment.Deploy()
+		deployment.Deploy()
+	case FluxControllerType:
+		config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+		if err != nil {
+			panic(err.Error())
+		}
+
+		// create the clientset
+		clientset, err := kubernetes.NewForConfig(config)
+		if err != nil {
+			panic(err.Error())
+		}
+		deployment := deployment.NewFluxDeploymentController(
+			deployment.FluxDeploymentConfig{
+				Namespace: "default",
+			},
+			clientset,
+			context.Background(),
+		)
+
+		deployment.Deploy()
+	}
 
 	/* // use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
