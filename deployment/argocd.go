@@ -9,13 +9,13 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/kubernetes"
+	// "k8s.io/client-go/kubernetes"
 )
 
 type ArgoCDDeploymentController struct {
-	config    ArgoCDDeploymentConfig
-	clientset *kubernetes.Clientset
-	client    *dynamic.DynamicClient
+	config ArgoCDDeploymentConfig
+	// clientset *kubernetes.Clientset
+	client *dynamic.DynamicClient
 }
 
 type ArgoCDDeploymentConfig struct {
