@@ -10,6 +10,7 @@ envsubst < templates/repo-https-secret.tpl.yaml > templates/repo-https-secret.ya
 ## Prerequisites
 - Додати репозиторій в ArgoCD (вже має бути)
 - Сервіс-акаунт з усіма необхідними доступами
+- Створити всі необхідні сікрети та конфіг мапи
 
 ## TODO
 - Додати кластер в ArgoCD програмно

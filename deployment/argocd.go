@@ -47,7 +47,8 @@ func (c ArgoCDDeploymentController) Deploy() {
 			"spec": map[string]interface{}{
 				"project": "default",
 				"destination": map[string]interface{}{
-					"server": c.config.DestServer,
+					"server":    c.config.DestServer,
+					"namespace": "kbot-test",
 				},
 				"source": map[string]interface{}{
 					"repoURL":        c.config.SourceRepoURL,
@@ -55,6 +56,7 @@ func (c ArgoCDDeploymentController) Deploy() {
 					"path":           c.config.SourcePath,
 				},
 				"syncPolicy": map[string]interface{}{
+					"automated": make(map[string]interface{}),
 					"syncOptions": []string{
 						"CreateNamespace=true",
 					},
@@ -113,5 +115,5 @@ func (c ArgoCDDeploymentController) Deploy() {
 	fmt.Println(string(jsonResult))
 
 	fmt.Println()
-	fmt.Println("Resource created: %s", result.GetName())
+	fmt.Println("Resource created: ", result.GetName())
 }
