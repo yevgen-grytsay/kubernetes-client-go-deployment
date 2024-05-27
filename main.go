@@ -18,15 +18,11 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"flag"
-	"fmt"
-	"os"
 	"path/filepath"
+	"yevhenhrytsai/k8s-client-test/deployment"
 
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 	//
@@ -48,13 +44,34 @@ func main() {
 	}
 	flag.Parse()
 
-	// use the current context in kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	if err != nil {
+		panic(err)
+	}
+	client, err := dynamic.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	deployment := deployment.NewArgoCDDeploymentController(deployment.ArgoCDDeploymentConfig{
+		Id:                   "abc",
+		AppName:              "kbot-",
+		ArgocdNamespace:      "argocd",
+		DestServer:           "https://192.168.1.119:16443",
+		SourceRepoURL:        "https://github.com/yevgen-grytsay/kbot",
+		SourceTargetRevision: "argocd",
+		SourcePath:           "helm",
+	}, client)
+
+	deployment.Deploy()
+
+	/* // use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err.Error())
-	}
+	} */
 
-	// create the clientset
+	/* // create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())
@@ -92,5 +109,5 @@ func main() {
 		}
 
 		os.Exit(0)
-	}
+	} */
 }

@@ -7,8 +7,13 @@ envsubst < templates/repo-https-secret.tpl.yaml > templates/repo-https-secret.ya
 
 ```
 
+## Prerequisites
+- Додати репозиторій в ArgoCD (вже має бути)
 - Сервіс-акаунт з усіма необхідними доступами
-- Додати репозиторій в ArgoCD
+
+## TODO
+- Додати кластер в ArgoCD програмно
+
 
 ## Resources
 - [client-go | dynamic-create-update-delete-deployment](https://github.com/kubernetes/client-go/blob/v0.30.1/examples/dynamic-create-update-delete-deployment/main.go)

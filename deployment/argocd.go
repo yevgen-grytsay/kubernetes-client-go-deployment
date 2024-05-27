@@ -18,18 +18,19 @@ type ArgoCDDeploymentController struct {
 }
 
 type ArgoCDDeploymentConfig struct {
-	id                   string
-	argocdNamespace      string
-	appName              string
-	destServer           string
-	sourceRepoURL        string
-	sourceTargetRevision string
-	sourcePath           string
+	Id                   string
+	ArgocdNamespace      string
+	AppName              string
+	DestServer           string
+	SourceRepoURL        string
+	SourceTargetRevision string
+	SourcePath           string
 }
 
-func NewArgoCDDeploymentController(config ArgoCDDeploymentConfig) *ArgoCDDeploymentController {
+func NewArgoCDDeploymentController(config ArgoCDDeploymentConfig, client *dynamic.DynamicClient) *ArgoCDDeploymentController {
 	return &ArgoCDDeploymentController{
 		config: config,
+		client: client,
 	}
 }
 
@@ -39,18 +40,18 @@ func (c ArgoCDDeploymentController) Deploy() {
 			"apiVersion": "argoproj.io/v1alpha1",
 			"kind":       "Application",
 			"metadata": map[string]interface{}{
-				"name":      c.config.appName,
-				"namespace": c.config.argocdNamespace,
+				"generateName": c.config.AppName,
+				"namespace":    c.config.ArgocdNamespace,
 			},
 			"spec": map[string]interface{}{
 				"project": "default",
 				"destination": map[string]interface{}{
-					"server": c.config.destServer,
+					"server": c.config.DestServer,
 				},
 				"source": map[string]interface{}{
-					"repoURL":        c.config.sourceRepoURL,
-					"targetRevision": c.config.sourceTargetRevision,
-					"path":           c.config.sourcePath,
+					"repoURL":        c.config.SourceRepoURL,
+					"targetRevision": c.config.SourceTargetRevision,
+					"path":           c.config.SourcePath,
 				},
 				"syncPolicy": map[string]interface{}{
 					"syncOptions": []string{
@@ -59,6 +60,30 @@ func (c ArgoCDDeploymentController) Deploy() {
 				},
 			},
 		},
+	}
+
+	application.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "argoproj.io",
+		Version: "v1alpha1",
+		Kind:    "Application",
+	})
+
+	list, err := c.client.Resource(schema.GroupVersionResource{
+		Group:    "argoproj.io",
+		Version:  "v1alpha1",
+		Resource: "applications",
+	}).Namespace(c.config.ArgocdNamespace).List(context.TODO(), metav1.ListOptions{})
+	// list, err := c.client.Resource(schema.GroupVersionResource{
+	// 	Group:    "apps",
+	// 	Version:  "v1",
+	// 	Resource: "deployments",
+	// }).Namespace(c.config.ArgocdNamespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		panic(err)
+	}
+	for _, dep := range list.Items {
+		fmt.Print("\t")
+		fmt.Println(dep.GetName())
 	}
 
 	// application := &unstructured.Unstructured{
@@ -70,11 +95,13 @@ func (c ArgoCDDeploymentController) Deploy() {
 	// 		},
 	// }
 
-	appRes := schema.GroupVersionResource{Group: "argoproj.io", Version: "argoproj.io/v1alpha1", Resource: "applications"}
+	appRes := schema.GroupVersionResource{Group: "argoproj.io", Version: "v1alpha1", Resource: "applications"}
+	// appRes := schema.GroupVersionResource{Group: "argoproj.io", Version: "argoproj.io/v1alpha1", Resource: "applications.argoproj.io"}
 	// client, err := dynamic.NewForConfig(config)
 	// Create Deployment
+	// ObjectMeta.GenerateName --- prefix
 	fmt.Println("Creating deployment...")
-	result, err := c.client.Resource(appRes).Namespace(c.config.argocdNamespace).Create(context.TODO(), application, metav1.CreateOptions{})
+	result, err := c.client.Resource(appRes).Namespace(c.config.ArgocdNamespace).Create(context.TODO(), application, metav1.CreateOptions{})
 	if err != nil {
 		panic(err)
 	}
