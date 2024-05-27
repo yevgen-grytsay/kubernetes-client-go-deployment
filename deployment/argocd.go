@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -107,4 +108,10 @@ func (c ArgoCDDeploymentController) Deploy() {
 	}
 
 	fmt.Print(result)
+
+	jsonResult, _ := json.Marshal(result)
+	fmt.Println(string(jsonResult))
+
+	fmt.Println()
+	fmt.Println("Resource created: %s", result.GetName())
 }

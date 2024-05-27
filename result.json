@@ -1,0 +1,61 @@
+{
+    "apiVersion": "argoproj.io/v1alpha1",
+    "kind": "Application",
+    "metadata": {
+        "creationTimestamp": "2024-05-27T10:44:49Z",
+        "generateName": "kbot-",
+        "generation": 1,
+        "managedFields": [
+            {
+                "apiVersion": "argoproj.io/v1alpha1",
+                "fieldsType": "FieldsV1",
+                "fieldsV1": {
+                    "f:metadata": {
+                        "f:generateName": {}
+                    },
+                    "f:spec": {
+                        ".": {},
+                        "f:destination": {
+                            ".": {},
+                            "f:server": {}
+                        },
+                        "f:project": {},
+                        "f:source": {
+                            ".": {},
+                            "f:path": {},
+                            "f:repoURL": {},
+                            "f:targetRevision": {}
+                        },
+                        "f:syncPolicy": {
+                            ".": {},
+                            "f:syncOptions": {}
+                        }
+                    }
+                },
+                "manager": "k8s-client-test",
+                "operation": "Update",
+                "time": "2024-05-27T10:44:49Z"
+            }
+        ],
+        "name": "kbot-5hplj",
+        "namespace": "argocd",
+        "resourceVersion": "62161",
+        "uid": "badad850-82e5-42ac-a3f3-bdcb57d7824d"
+    },
+    "spec": {
+        "destination": {
+            "server": "https://192.168.1.119:16443"
+        },
+        "project": "default",
+        "source": {
+            "path": "helm",
+            "repoURL": "https://github.com/yevgen-grytsay/kbot",
+            "targetRevision": "argocd"
+        },
+        "syncPolicy": {
+            "syncOptions": [
+                "CreateNamespace=true"
+            ]
+        }
+    }
+}
